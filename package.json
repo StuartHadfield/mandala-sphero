@@ -1,0 +1,25 @@
+{
+  "name": "iot_robots-activity-pubsub_with_javascript",
+  "version": "1.0.0",
+  "description": "In this activity, you'll use *JavaScript*, *nodeJS* and the *AWS JavaScript SDK* to subcribe and publish to multiple AWS topics in order to solve a riddle.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OfferZen-Make/iot_robots-activity-pubsub_with_javascript.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/OfferZen-Make/iot_robots-activity-pubsub_with_javascript/issues"
+  },
+  "homepage": "https://github.com/OfferZen-Make/iot_robots-activity-pubsub_with_javascript#readme",
+  "private": true,
+  "dependencies": {
+    "aws-iot-device-sdk": "^2.2.1",
+    "moment": "^2.22.1",
+    "node-mouse": "0.0.2",
+    "nodemon": "^1.17.4"
+  }
+}
