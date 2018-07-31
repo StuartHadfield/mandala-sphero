@@ -1,0 +1,197 @@
+
+<html>
+<head>
+
+    <link href='http://fonts.googleapis.com/css?family=Noto+Sans:700,700' rel='stylesheet' type='text/css'>
+    <link href='./common.css' rel='stylesheet' type='text/css'>
+    <title>Mandala Shero Control </title>
+    <style type="text/css">
+        #canvas {
+            cursor: crosshair;
+        }
+    </style>
+</head>
+
+
+<body>
+<div>
+
+
+    <div class="holder" style="user-select: none;">
+        <canvas id="canvas" width="1000" height="1000"></canvas>
+    </div>
+
+    <div class="h-wrapp">
+        <div class="holder" style="position: relative; height: 50px; width: 150px; float:left;">
+            <div style="position: relative; cursor: pointer;">
+                <div style="position:absolute;top:10px;left:10px;width:10px;height:10px;background:red;" id="red" onclick="color(this)"></div>
+                <div style="position:absolute;top:35px;left:10px;width:60px;height:20px;" onclick="init()">[x] erase</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+
+
+<script src="/content/lib/hidpi.min.js"></script>
+<script type="text/javascript">
+
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+
+    canvas.addEventListener("mousemove", function (e) {
+        console.log('foooo')
+        findxy('move', e)
+    }, false);
+    canvas.addEventListener("mousedown", function (e) {
+        console.log('foooo')
+        findxy('down', e)
+    }, false);
+    canvas.addEventListener("mouseup", function (e) {
+        findxy('up', e)
+    }, false);
+    canvas.addEventListener("mouseout", function (e) {
+        findxy('out', e)
+    }, false);
+
+    var prevX = 0;
+    var currX = 0;
+    var prevY = 0;
+    var currY = 0;
+    var flag = false;
+    var dot_flag = false;
+    var width = 1000;
+    var height = 1000;
+    var center = {x: width / 2 , y: height / 2};
+    var radius = (width / 2) - 10;
+    var drawColor = 'red';
+    var drawLineWidth = 1;
+    var lineColorTransparent = 'rgba(120, 120, 120, 0.3)'
+    var slices = 4;
+    var _angle = 360 / slices;
+    var _start = 0;
+
+    var getPointOnCircle = function (deg, center, radius) {
+        var rad = d2r(deg);
+        var x = center.x + radius * Math.cos(rad);
+        var y = center.y + radius * Math.sin(rad);
+        return { x: x, y: y};
+    }
+
+    var lineStroke = function(start, end, width, color) {
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.moveTo(start.x, start.y);
+        ctx.lineTo(end.x, end.y);
+        ctx.stroke();
+    }
+
+    var d2r = function (deg) {
+        return deg * Math.PI/180;
+    }
+
+    var color = function (obj) {
+        drawColor = obj.id;
+    };
+
+    function rotate(p1, p2, a) {
+        a = d2r(a);
+        var xr = (p1.x - p2.x) * Math.cos(a) - (p1.y - p2.y) * Math.sin(a) + p2.x;
+        var yr = (p1.x - p2.x) * Math.sin(a) + (p1.y - p2.y) * Math.cos(a) + p2.y;
+        return {x:xr, y:yr};
+    }
+
+    function draw() {
+
+        //draw main line
+        ctx.beginPath();
+        ctx.moveTo(prevX, prevY);
+        ctx.lineTo(currX, currY);
+        ctx.strokeStyle = drawColor;
+        ctx.lineWidth = drawLineWidth;
+        ctx.stroke();
+        ctx.closePath();
+        _start = 0;
+        //draw copies
+        for(var i = 0; i < slices - 1; i++) {
+            _start += _angle;
+            var rP = rotate({x: prevX, y: prevY}, center, _start);
+            var rC = rotate({x: currX, y: currY}, center, _start);
+            lineStroke(rP, rC, drawLineWidth, drawColor);
+
+        }
+    }
+
+    var drawDot = function () {
+        ctx.beginPath();
+        ctx.fillStyle = drawColor;
+        ctx.fillRect(currX, currY, drawLineWidth, drawLineWidth);
+        ctx.closePath();
+
+        _start = 0;
+        for(var i = 0; i < slices - 1; i++) {
+            _start += _angle;
+            var rotated = rotate({x: currX, y: currY}, center, _start);
+            ctx.beginPath();
+            ctx.fillStyle = drawColor;
+            ctx.fillRect(rotated.x, rotated.y, drawLineWidth, drawLineWidth);
+            ctx.closePath();
+        }
+    }
+
+    function findxy(res, e) {
+        if (res == 'down') {
+            prevX = currX;
+            prevY = currY;
+            currX = e.clientX - canvas.offsetLeft;
+            currY = e.clientY - canvas.offsetTop;
+
+            flag = true;
+            dot_flag = true;
+            if (dot_flag) {
+                drawDot();
+                dot_flag = false;
+            }
+        }
+        if (res == 'up' || res == "out") {
+            flag = false;
+        }
+        if (res == 'move') {
+            if (flag) {
+                prevX = currX;
+                prevY = currY;
+                currX = e.clientX - canvas.offsetLeft;
+                currY = e.clientY - canvas.offsetTop;
+                draw();
+            }
+        }
+    }
+
+
+    //start everything, empty circle
+    var init = function () {
+
+        ctx.clearRect(0,0, width, height);
+        ctx.fillStyle = '#212121';
+        ctx.fillRect(0,0,width,height);
+        ctx.strokeStyle = lineColorTransparent;
+        ctx.beginPath();
+        ctx.arc(center.x, center.y, radius, 0, Math.PI * 2, true);
+        ctx.stroke();
+        ctx.closePath();
+        _start = 0;
+
+        for(var i = 0; i < slices; i++ ) {
+            lineStroke(center, getPointOnCircle(_start, center, radius), 1, lineColorTransparent);
+            _start += _angle;
+        }
+    }
+
+    init();
+
+</script>
+
+</html>
